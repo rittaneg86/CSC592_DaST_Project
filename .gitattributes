@@ -1,5 +1,5 @@
+pretrained/vgg16cifar10.pth filter=lfs diff=lfs merge=lfs -text
 *.pth filter=lfs diff=lfs merge=lfs -text
 pretrained/vgg_vgg16_best.pth filter=lfs diff=lfs merge=lfs -text
 pretrained/vgg_vgg16_final.pth filter=lfs diff=lfs merge=lfs -text
-pretrained/vgg16cifar10.pth filter=lfs diff=lfs merge=lfs -text
 data/cifar-10-python.tar.gz filter=lfs diff=lfs merge=lfs -text
