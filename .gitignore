@@ -28,4 +28,4 @@ venv/
 batch_logs*/
 
 # folder 
-saved_model*/
+saved_model*/.venv/
