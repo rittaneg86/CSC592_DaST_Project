@@ -1,0 +1,84 @@
+2025-04-25 05:07:00,691 INFO BIM Untargeted | Attack Success Rate: 99.42% (n=7038, m=7079) | Avg L2: 1.0000
+2025-04-25 05:09:57,374 INFO FGSM Untargeted | Attack Success Rate: 90.14% (n=6381, m=7079) | Avg L2: 0.8853
+2025-04-25 05:12:59,928 INFO PGD Untargeted | Attack Success Rate: 99.66% (n=7055, m=7079) | Avg L2: 1.0000
+2025-04-25 05:36:26,417 INFO BIM Untargeted | Attack Success Rate: 87.13% (n=6168, m=7079) | Avg L2: 0.9992
+2025-04-25 06:00:55,703 INFO FGSM Untargeted | Attack Success Rate: 73.36% (n=5193, m=7079) | Avg L2: 0.9582
+2025-04-25 06:07:34,101 INFO PGD Untargeted | Attack Success Rate: 86.92% (n=6153, m=7079) | Avg L2: 0.9996
+2025-04-25 06:22:37,497 INFO BIM Untargeted | Attack Success Rate: 87.37% (n=6185, m=7079) | Avg L2: 0.9994
+2025-04-25 06:27:18,867 INFO FGSM Untargeted | Attack Success Rate: 73.74% (n=5220, m=7079) | Avg L2: 0.9586
+2025-04-25 06:38:13,571 INFO PGD Untargeted | Attack Success Rate: 87.30% (n=6180, m=7079) | Avg L2: 0.9996
+2025-04-25 08:04:02,250 INFO BIM Untargeted | Attack Success Rate: 87.10% (n=6166, m=7079) | Avg L2: 0.9992
+2025-04-25 08:11:03,963 INFO FGSM Untargeted | Attack Success Rate: 73.36% (n=5193, m=7079) | Avg L2: 0.9582
+2025-04-25 08:16:08,297 INFO PGD Untargeted | Attack Success Rate: 86.92% (n=6153, m=7079) | Avg L2: 0.9996
+2025-04-25 08:32:45,930 INFO CW Untargeted | Attack Success Rate: 0.25% (n=18, m=7079) | Avg L2: 0.6475
+2025-04-25 20:02:53,585 INFO BIM Untargeted | Attack Success Rate: 87.12% (n=6167, m=7079) | Avg L2: 0.9992
+2025-04-25 20:06:13,970 INFO FGSM Untargeted | Attack Success Rate: 73.36% (n=5193, m=7079) | Avg L2: 0.9582
+2025-04-25 20:08:33,943 INFO PGD Untargeted | Attack Success Rate: 86.90% (n=6152, m=7079) | Avg L2: 0.9996
+--------------------------LAST FIXES-----------------------------------------------------------------------------------
+2025-04-27 05:05:22,005 INFO FGSM Untargeted | Attack Success Rate: 84.62% (n=5990, m=7079) | L2_Distance: 0.9458
+2025-04-27 05:05:23,573 INFO Substitute model accuracy: 36.09%
+2025-04-27 05:10:44,992 INFO BIM Untargeted | Attack Success Rate: 95.42% (n=6755, m=7079) | L2_Distance: 0.9997
+2025-04-27 05:10:46,533 INFO Substitute model accuracy: 36.09%
+2025-04-27 05:18:32,091 INFO PGD Untargeted | Attack Success Rate: 95.85% (n=6785, m=7079) | L2_Distance: 0.9997
+2025-04-27 05:18:33,697 INFO Substitute model accuracy: 36.09%
+2025-04-27 11:18:33,184 INFO BIM Untargeted | ASR:  95.42% (n=324.0,m=7079.0) | L2: 1.4341
+2025-04-27 11:18:34,747 INFO Substitute model accuracy: 36.09%
+2025-04-27 12:05:30,764 INFO BIM Untargeted | ASR:   4.58% (n=324.0,m=7079.0) | L2: 1.4341
+2025-04-27 12:05:32,450 INFO Substitute model accuracy: 36.09%
+2025-04-27 12:09:40,962 INFO BIM Untargeted | ASR:  95.42% (n=324.0,m=7079.0) | L2: 1.4341
+2025-04-27 12:09:42,567 INFO Substitute model accuracy: 36.09%
+2025-04-27 12:16:42,151 INFO BIM Untargeted | ASR:   4.58% (n=324.0,m=7079.0) | L2: 1.4341
+2025-04-27 12:16:43,752 INFO Substitute model accuracy: 36.09%
+2025-04-27 12:22:22,998 INFO BIM Untargeted | ASR:  95.42% (n=324.0,m=7079.0) | L2: 1.4341
+2025-04-27 12:22:24,540 INFO Substitute model accuracy: 36.09%
+2025-04-27 12:24:33,068 INFO BIM Untargeted | ASR:  95.42% (n=324.0,m=7079.0) | L2: 1.4341
+2025-04-27 12:24:34,513 INFO Substitute model accuracy: 36.09%
+2025-04-27 12:27:38,590 INFO FGSM Untargeted | ASR:  84.62% (n=1089.0,m=7079.0) | L2: 1.7018
+2025-04-27 12:27:40,237 INFO Substitute model accuracy: 36.09%
+2025-04-27 12:30:01,518 INFO PGD Untargeted | ASR:  95.85% (n=294.0,m=7079.0) | L2: 1.4996
+2025-04-27 12:30:03,099 INFO Substitute model accuracy: 36.09%
+--------------DaST-L RESULTS-----------------------------------------------------------
+2025-04-27 12:35:20,869 INFO BIM Untargeted | ASR:  95.14% (n=344.0,m=7079.0) | L2: 1.4472
+2025-04-27 12:35:22,585 INFO Substitute model accuracy: 45.63%
+2025-04-27 12:38:28,280 INFO FGSM Untargeted | ASR:  82.85% (n=1214.0,m=7079.0) | L2: 1.7018
+2025-04-27 12:38:29,839 INFO Substitute model accuracy: 45.63%
+2025-04-27 12:41:35,284 INFO PGD Untargeted | ASR:  95.32% (n=331.0,m=7079.0) | L2: 1.5148
+2025-04-27 12:41:36,909 INFO Substitute model accuracy: 45.63%
+------------Dast-L targeted attacks------------------------------------------------------
+2025-04-27 12:48:45,366 INFO BIM Targeted   | ASR: 24.67% (n=2467.0,m=10000.0) | L2: 1.3914
+2025-04-27 12:48:47,007 INFO Substitute model accuracy: 45.63%
+2025-04-27 12:57:24,421 INFO PGD Targeted   | ASR: 22.82% (n=2282.0,m=10000.0) | L2: 1.4747
+2025-04-27 12:57:25,956 INFO Substitute model accuracy: 45.63%
+
+-----------Dast-P Results-----------------------------------------------------------------
+2025-04-27 13:05:02,466 INFO BIM Untargeted | ASR:  95.42% (n=324.0,m=7079.0) | L2: 1.4341
+2025-04-27 13:05:04,037 INFO Substitute model accuracy: 36.09%
+2025-04-27 13:07:03,698 INFO FGSM Untargeted | ASR:  84.62% (n=1089.0,m=7079.0) | L2: 1.7018
+2025-04-27 13:07:05,244 INFO Substitute model accuracy: 36.09%
+2025-04-27 13:09:02,586 INFO PGD Untargeted | ASR:  95.85% (n=294.0,m=7079.0) | L2: 1.4996
+2025-04-27 13:09:04,240 INFO Substitute model accuracy: 36.09%
+-------------------DaST-p Targeted---------------------------------------------------------
+2025-04-27 13:10:52,820 INFO BIM Targeted   | ASR: 28.08% (n=2808.0,m=10000.0) | L2: 1.3832
+2025-04-27 13:10:54,399 INFO Substitute model accuracy: 36.09%
+2025-04-27 13:13:28,190 INFO PGD Targeted   | ASR: 25.51% (n=2551.0,m=10000.0) | L2: 1.4612
+2025-04-27 13:13:29,874 INFO Substitute model accuracy: 36.09%
+2025-04-27 14:25:43,549 INFO BIM Untargeted | ASR:  47.96% (n=3684.0,m=7079.0) | L2: 1.7615
+2025-04-27 14:25:53,244 INFO Substitute model accuracy: 87.80%
+2025-04-27 14:34:46,132 INFO BIM Untargeted | ASR:  48.00% (n=3681.0,m=7079.0) | L2: 1.7615
+2025-04-27 14:34:55,802 INFO Substitute model accuracy: 87.80%
+2025-04-27 15:04:11,700 INFO BIM Untargeted | ASR:  48.03% (n=3679.0,m=7079.0) | L2: 1.7614
+2025-04-27 15:04:21,359 INFO Substitute model accuracy: 87.80%
+2025-04-27 15:17:23,252 INFO BIM Untargeted | ASR:  33.62% (n=4699.0,m=7079.0) | L2: 1.2476
+2025-04-27 15:17:32,960 INFO Substitute model accuracy: 87.80%
+2025-04-27 15:34:04,303 INFO BIM Untargeted | ASR:  48.00% (n=3681.0,m=7079.0) | L2: 1.7615
+2025-04-27 15:34:13,964 INFO Substitute model accuracy: 87.80%
+2025-04-27 15:44:04,937 INFO BIM Untargeted | ASR:  48.03% (n=3679.0,m=7079.0) | L2: 1.7615
+2025-04-27 15:44:14,616 INFO Substitute model accuracy: 87.80%
+2025-04-27 15:57:18,140 INFO BIM Untargeted | ASR:  48.04% (n=3678.0,m=7079.0) | L2: 1.7614
+2025-04-27 15:57:27,840 INFO Substitute model accuracy: 87.80%
+2025-04-27 16:34:54,142 INFO BIM Untargeted | ASR:  48.00% (n=3681.0,m=7079.0) | L2: 1.7615
+2025-04-27 16:35:03,860 INFO Substitute model accuracy: 87.80%
+2025-04-27 16:43:41,182 INFO BIM Untargeted | ASR:  48.04% (n=3678.0,m=7079.0) | L2: 1.7615
+2025-04-27 16:43:50,854 INFO Substitute model accuracy: 87.80%
+2025-04-27 17:04:38,273 INFO BIM Untargeted | ASR:  48.04% (n=3678.0,m=7079.0) | L2: 1.7614
+2025-04-27 17:04:47,949 INFO Substitute model accuracy: 87.80%

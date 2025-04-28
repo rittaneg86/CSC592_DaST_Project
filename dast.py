@@ -7,29 +7,21 @@ import sys
 import xlwt
 import random
 import numpy as np
-from advertorch.attacks import LinfBasicIterativeAttack
-from sklearn.externals import joblib
-# from utils import load_data
-import pickle
 import torch
 import torchvision
 import torch.nn.functional as F
 import torch.nn as nn
-import torch.nn.parallel
 import torch.backends.cudnn as cudnn
-from torch.nn.functional import mse_loss
 import torch.optim as optim
 import torch.utils.data
-from torch.optim.lr_scheduler import StepLR
-import torchvision.datasets as dset
 import torchvision.transforms as transforms
-import torchvision.utils as vutils
 import torch.utils.data.sampler as sp
-from net import Net_s, Net_m, Net_l
-from vgg import VGG
-from resnet import ResNet50, ResNet18, ResNet34
+import foolbox as fb
+from foolbox.criteria import Misclassification
+from vgg import VGG  # Make sure you have your VGG model defined properly
+
 cudnn.benchmark = True
-workbook = xlwt.Workbook(encoding = 'utf-8')
+workbook = xlwt.Workbook(encoding='utf-8')
 worksheet = workbook.add_sheet('imitation_network_sig')
 nz = 128
 
@@ -48,77 +40,38 @@ class Logger(object):
 sys.stdout = Logger('imitation_network_model.log', sys.stdout)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
-parser.add_argument('--batchSize', type=int, default=500, help='input batch size')
-parser.add_argument('--dataset', type=str, default='azure')
-parser.add_argument('--niter', type=int, default=2000, help='number of epochs to train for')
-parser.add_argument('--lr', type=float, default=0.0001, help='learning rate, default=0.0002')
-parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
-parser.add_argument('--cuda', default=True, action='store_true', help='enables cuda')
-parser.add_argument('--manualSeed', type=int, help='manual seed')
-parser.add_argument('--alpha', type=float, default=0.2, help='alpha')
-parser.add_argument('--beta', type=float, default=0.1, help='alpha')
-parser.add_argument('--G_type', type=int, default=1, help='iteration limitation')
-parser.add_argument('--save_folder', type=str, default='saved_model', help='alpha')
-
+parser.add_argument('--workers', type=int, default=2)
+parser.add_argument('--batchSize', type=int, default=500)
+parser.add_argument('--niter', type=int, default=2000)
+parser.add_argument('--lr', type=float, default=0.0001)
+parser.add_argument('--beta1', type=float, default=0.5)
+parser.add_argument('--cuda', default=True, action='store_true')
+parser.add_argument('--alpha', type=float, default=0.2)
+parser.add_argument('--beta', type=float, default=0.1)
+parser.add_argument('--G_type', type=int, default=1)
+parser.add_argument('--save_folder', type=str, default='saved_model')
+parser.add_argument('--original_model_path', type=str, required=True)
 opt = parser.parse_args()
 print(opt)
-
-if torch.cuda.is_available() and not opt.cuda:
-    print("WARNING: You have a CUDA device, so you should probably run with --cuda")
-
-if opt.dataset == 'azure':
-    testset = torchvision.datasets.MNIST(root='dataset/', train=False,
-                                        download=True,
-                                        transform=transforms.Compose([
-                                                # transforms.Pad(2, padding_mode="symmetric"),
-                                                transforms.ToTensor(),
-                                                # transforms.RandomCrop(32, 4),
-                                                # normalize,
-                                        ]))
-    netD = Net_l().cuda()
-    netD = nn.DataParallel(netD)
-
-    clf = joblib.load('pretrained/sklearn_mnist_model.pkl')
-
-    adversary_ghost = LinfBasicIterativeAttack(
-        netD, loss_fn=nn.CrossEntropyLoss(reduction="sum"), eps=0.25,
-        nb_iter=100, eps_iter=0.01, clip_min=0.0, clip_max=1.0,
-        targeted=False)
-    nc=1
-
-elif opt.dataset == 'mnist':
-    testset = torchvision.datasets.MNIST(root='dataset/', train=False,
-                                        download=True,
-                                        transform=transforms.Compose([
-                                                # transforms.Pad(2, padding_mode="symmetric"),
-                                                transforms.ToTensor(),
-                                                # transforms.RandomCrop(32, 4),
-                                                # normalize,
-                                        ]))
-    netD = Net_l().cuda()
-    netD = nn.DataParallel(netD)
-
-    original_net = Net_m().cuda()
-    state_dict = torch.load(
-        'pretrained/net_m.pth')
-    original_net.load_state_dict(state_dict)
-    original_net = nn.DataParallel(original_net)
-    original_net.eval()
-
-    adversary_ghost = LinfBasicIterativeAttack(
-        netD, loss_fn=nn.CrossEntropyLoss(reduction="sum"), eps=0.25,
-        nb_iter=200, eps_iter=0.02, clip_min=0.0, clip_max=1.0,
-        targeted=False)
-    nc=1
-
-data_list = [i for i in range(6000, 8000)] # fast validation
-testloader = torch.utils.data.DataLoader(testset, batch_size=500,
-                                         sampler = sp.SubsetRandomSampler(data_list), num_workers=2)
-# nc=1
+if opt.cuda and not torch.cuda.is_available():
+    raise EnvironmentError("CUDA is not available")
 
 device = torch.device("cuda:0" if opt.cuda else "cpu")
-# custom weights initialization called on netG and netD
+
+transform = transforms.Compose([transforms.ToTensor()])
+testset = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=opt.batchSize, sampler=sp.SubsetRandomSampler([i for i in range(6000, 8000)]), num_workers=opt.workers)
+
+netD = VGG('VGG13').to(device)
+netD = nn.DataParallel(netD)
+
+original_net = VGG('VGG16').to(device)
+original_net.load_state_dict(torch.load(opt.original_model_path))
+original_net.eval()
+
+fmodel = fb.PyTorchModel(original_net, bounds=(0.0, 1.0))
+attack = fb.attacks.L2BasicIterativeAttack(abs_stepsize=0.01, steps=200, random_start=False)
+
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -127,30 +80,15 @@ def weights_init(m):
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
 
-def cal_azure(model, data):
-    data = data.view(data.size(0), 784).cpu().numpy()
-    output = model.predict(data)
-    output = torch.from_numpy(output).cuda().long()
-    return output
-
-def cal_azure_proba(model, data):
-    data = data.view(data.size(0), 784).cpu().numpy()
-    output = model.predict_proba(data)
-    output = torch.from_numpy(output).cuda().float()
-    return output
-
-
 class Loss_max(nn.Module):
     def __init__(self):
         super(Loss_max, self).__init__()
-        return
 
     def forward(self, pred, truth, proba):
         criterion_1 = nn.MSELoss()
         criterion = nn.CrossEntropyLoss()
         pred_prob = F.softmax(pred, dim=1)
         loss = criterion(pred, truth) + criterion_1(pred_prob, proba) * opt.beta
-        # loss = criterion(pred, truth)
         final_loss = torch.exp(loss * -1)
         return final_loss
 
@@ -304,7 +242,6 @@ class Generator(nn.Module):
         output = self.main(input)
         return output
 
-
 def chunks(arr, m):
     n = int(math.ceil(arr.size(0) / float(m)))
     return [arr[i:i + n] for i in range(0, arr.size(0), n)]
@@ -331,42 +268,30 @@ with torch.no_grad():
     netD.eval()
     for data in testloader:
         inputs, labels = data
-        inputs = inputs.cuda()
-        labels = labels.cuda()
-        # outputs = netD(inputs)
-        if opt.dataset == 'azure':
-            predicted = cal_azure(clf, inputs)
-        else:
-            outputs = original_net(inputs)
-            _, predicted = torch.max(outputs.data, 1)
-        # _, predicted = torch.max(outputs.data, 1)
+        inputs, labels = inputs.to(device), labels.to(device)
+        outputs = original_net(inputs)
+        _, predicted = torch.max(outputs.data, 1)
         total += labels.size(0)
         correct_netD += (predicted == labels).sum()
-    print('Accuracy of the network on netD: %.2f %%' %
-            (100. * correct_netD.float() / total))
+    print('Accuracy of original model: %.2f %%' % (100. * correct_netD.float() / total))
 
 ################################################
 # estimate the attack success rate of initial D:
 ################################################
+
 correct_ghost = 0.0
 total = 0.0
 netD.eval()
 for data in testloader:
     inputs, labels = data
-    inputs = inputs.cuda()
-    labels = labels.cuda()
-
-    adv_inputs_ghost = adversary_ghost.perturb(inputs, labels)
+    inputs, labels = inputs.to(device), labels.to(device)
+    adv_inputs, _, _ = attack(fmodel, inputs, Misclassification(labels), epsilons=1.5)
     with torch.no_grad():
-        if opt.dataset == 'azure':
-            predicted = cal_azure(clf, adv_inputs_ghost)
-        else:
-            outputs = original_net(adv_inputs_ghost)
-            _, predicted = torch.max(outputs.data, 1)
+        outputs = original_net(adv_inputs)
+        _, predicted = torch.max(outputs.data, 1)
     total += labels.size(0)
     correct_ghost += (predicted == labels).sum()
-print('Attack success rate: %.2f %%' %
-        (100 - 100. * correct_ghost.float() / total))
+print('Attack success rate: %.2f %%' % (100 - 100. * correct_adv.float() / total))
 del inputs, labels, adv_inputs_ghost
 torch.cuda.empty_cache()
 gc.collect()
@@ -379,7 +304,6 @@ for epoch in range(opt.niter):
 
     for ii in range(batch_num):
         netD.zero_grad()
-
         ############################
         # (1) Update D network:
         ###########################
@@ -400,56 +324,41 @@ for epoch in range(opt.niter):
         data = data[index]
         set_label = set_label[index]
 
-        # obtain the output label of T
         with torch.no_grad():
-            # outputs = original_net(data)
-            if opt.dataset == 'azure':
-                outputs = cal_azure_proba(clf, data)
-                label = cal_azure(clf, data)
-            else:
                 outputs = original_net(data)
-                _, label = torch.max(outputs.data, 1)
-                outputs = F.softmax(outputs, dim=1)
-            # _, label = torch.max(outputs.data, 1)
-        # print(label)
+                _, labels = torch.max(outputs.data, 1)
+                soft_labels = F.softmax(outputs, dim=1)
 
-        output = netD(data.detach())
-        prob = F.softmax(output, dim=1)
-        # print(torch.sum(outputs) / 500.)
-        errD_prob = mse_loss(prob, outputs, reduction='mean')
-        errD_fake = criterion(output, label) + errD_prob * opt.beta
-        D_G_z1 = errD_fake.mean().item()
+        outputs_D = netD(data.detach())
+        prob_D = F.softmax(outputs_D, dim=1)
+        errD_prob = F.mse_loss(prob_D, soft_labels)
+        errD_fake = criterion(outputs_D, labels) + errD_prob * opt.beta
         errD_fake.backward()
-
-        errD = errD_fake
         optimizerD.step()
-
-        del output, errD_fake
+        del outputs_D, errD_fake
 
         ############################
         # (2) Update G network:
         ###########################
+
         netG.zero_grad()
-        for i in range(10):
-            pre_conv_block[i].zero_grad()
-        output = netD(data)
-        loss_imitate = criterion_max(pred=output, truth=label, proba=outputs)
-        loss_diversity = criterion(output, set_label.squeeze().long())
+        for block in pre_conv_block:
+            block.zero_grad()
+
+        output_G = netD(data)
+        loss_imitate = criterion_max(output_G, labels, soft_labels)
+        loss_diversity = criterion(output_G, set_label.squeeze().long())
         errG = opt.alpha * loss_diversity + loss_imitate
         if loss_diversity.item() <= 0.1:
             opt.alpha = loss_diversity.item()
         errG.backward()
-        D_G_z2 = errG.mean().item()
         optimizerG.step()
-        for i in range(10):
-            optimizer_block[i].step()
+        for opt_block in optimizer_block:
+            opt_block.step()
 
-        if (ii % 40) == 0:
-            print('[%d/%d][%d/%d] D: %.4f D_prob: %.4f G: %.4f D(G(z)): %.4f / %.4f loss_imitate: %.4f loss_diversity: %.4f'
-                % (epoch, opt.niter, ii, batch_num,
-                    errD.item(), errD_prob.item(), errG.item(), D_G_z1, D_G_z2, loss_imitate.item(), loss_diversity.item()))
-
-
+        if ii % 40 == 0:
+            print('[%d/%d][%d/%d] D Loss: %.4f, D_prob Loss: %.4f, G Loss: %.4f, Imitation: %.4f, Diversity: %.4f' %
+                  (epoch, opt.niter, ii, batch_num, errD_fake.item(), errD_prob.item(), errG.item(), loss_imitate.item(), loss_diversity.item()))
     ################################################
     # estimate the attack success rate of trained D:
     ################################################
@@ -458,28 +367,20 @@ for epoch in range(opt.niter):
     netD.eval()
     for data in testloader:
         inputs, labels = data
-        inputs = inputs.cuda()
-        labels = labels.cuda()
-
-        adv_inputs_ghost = adversary_ghost.perturb(inputs, labels)
+        inputs, labels = inputs.to(device), labels.to(device)
+        adv_inputs, _, _ = attack(fmodel, inputs, Misclassification(labels), epsilons=1.5)
         with torch.no_grad():
-            # outputs = original_net(adv_inputs_ghost)
-            if opt.dataset == 'azure':
-                predicted = cal_azure(clf, adv_inputs_ghost)
-            else:
-                outputs = original_net(adv_inputs_ghost)
-                _, predicted = torch.max(outputs.data, 1)
-            # _, predicted = torch.max(outputs.data, 1)
+            outputs = original_net(adv_inputs)
+            _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        correct_ghost += (predicted == labels).sum()
 
-            total += labels.size(0)
-            correct_ghost += (predicted == labels).sum()
-    print('Attack success rate: %.2f %%' %
-            (100 - 100. * correct_ghost.float() / total))
+    print('Attack success rate: %.2f %%' % (100 - 100. * correct_ghost.float() / total))
+    worksheet.write(epoch, 0, (correct_ghost.float() / total).item())
+
     if best_att < (total - correct_ghost):
-        torch.save(netD.state_dict(),
-                    opt.save_folder + '/netD_epoch_%d.pth' % (epoch))
-        torch.save(netG.state_dict(),
-                    opt.save_folder + '/netG_epoch_%d.pth' % (epoch))
+        torch.save(netD.state_dict(), f'{opt.save_folder}/netD_epoch_{epoch}.pth')
+        torch.save(netG.state_dict(), f'{opt.save_folder}/netG_epoch_{epoch}.pth')
         best_att = (total - correct_ghost)
         print('This is the best model')
     worksheet.write(epoch, 0, (correct_ghost.float() / total).item())
@@ -513,4 +414,4 @@ for epoch in range(opt.niter):
             print('This is the best model')
     worksheet.write(epoch, 1, (correct_netD.float() / total).item())
 workbook.save('imitation_network_saved_azure.xls')
-
+    

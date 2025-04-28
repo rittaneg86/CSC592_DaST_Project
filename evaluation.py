@@ -6,9 +6,11 @@ import sys
 import xlwt
 import random
 import numpy as np
-from advertorch.attacks import LinfBasicIterativeAttack, CarliniWagnerL2Attack
-from advertorch.attacks import GradientSignAttack, PGDAttack
-import foolbox
+#from advertorch.attacks import LinfBasicIterativeAttack, CarliniWagnerL2Attack
+#from advertorch.attacks import GradientSignAttack, PGDAttack
+import foolbox as fb 
+import torch.nn.functional as F
+from foolbox.criteria import Misclassification, TargetedMisclassification
 import torch
 import torchvision
 import torch.nn as nn
@@ -56,7 +58,7 @@ if torch.cuda.is_available() and not opt.cuda:
     print("WARNING: You have a CUDA device, so you should probably run with \
          --cuda")
 
-testset = torchvision.datasets.MNIST(root='/data/dataset/', train=False,
+testset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                      download=True,
                                      transform=transforms.Compose([
                                         transforms.ToTensor(),

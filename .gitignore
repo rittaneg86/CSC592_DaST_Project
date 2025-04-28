@@ -1,0 +1,31 @@
+# Byte‐compiled Python files
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+venv/
+.env/
+
+
+# MacOS
+.DS_Store
+
+
+*.pt
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Editor directories
+.vscode/
+.idea/
+
+# batch scripts 
+*.bat
+*.sh
+*.out
+# batch_logs
+batch_logs*/
+
+# folder 
+saved_model/

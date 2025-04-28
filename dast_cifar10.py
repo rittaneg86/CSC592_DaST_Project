@@ -27,8 +27,8 @@ import torchvision.transforms as transforms
 import torch.utils.data.sampler as sp
 # from net import Net_s, Net_m, Net_l
 from torchvision.models import resnet18, ResNet18_Weights
-from vgg_sun import VGG
-from resnet import ResNet18
+from vgg import VGG
+from resnet import ResNet18 , ResNet50
 
 cudnn.benchmark = True
 # workbook = xlwt.Workbook(encoding = 'utf-8')
@@ -70,7 +70,7 @@ parser.add_argument('--cuda', default=True, action='store_true', help='enables c
 parser.add_argument('--alpha', type=float, default=0.2, help='alpha')
 parser.add_argument('--beta', type=float, default=0.1, help='beta')#(from 0.1 to 20.0)--DasTP     0.0--DasTL
 parser.add_argument('--G_type', type=int, default=1, help='G type')
-parser.add_argument('--save_folder', type=str, default='saved_model', help='alpha')
+parser.add_argument('--save_folder', type=str, default='saved_model2', help='alpha')
 opt = parser.parse_args()
 print(opt)
 
@@ -80,23 +80,33 @@ if torch.cuda.is_available() and not opt.cuda:
 
 transforms = transforms.Compose([transforms.ToTensor()])
 
-testset = torchvision.datasets.CIFAR10(root='/fs03/rm46/dataset', train=False,
+testset = torchvision.datasets.CIFAR10(root='./data', train=False,
                                     download=True,
                                     transform=transforms
                                     )
 netD = VGG('VGG13').cuda()
-
+netD.eval()
 original_net = VGG('VGG16').cuda()
 # original_net = nn.DataParallel(original_net)
 original_net.load_state_dict(torch.load(
-        'pretrained/vgg16cifar10.pth')['model'])
+        "/work/pi_csc592_uri_edu/Ritta_uri/CSC592_DaST_Project/vgg_vgg16_final.pth"))
 # original_net = nn.DataParallel(original_net)
 original_net.eval()
 
 
-fmodel = fb.PyTorchModel(netD, bounds=(0.0,1.0))
-attack_fb = fb.attacks.L2BasicIterativeAttack(abs_stepsize=0.01, steps=240, random_start=False)
 
+fmodel = fb.PyTorchModel(netD, bounds=(0.0,1.0)) # change to netD bc i am running dast
+attack_fb = fb.attacks.L2BasicIterativeAttack(abs_stepsize=0.01, steps=240, random_start=False)
+#attack_fgsm= fb.attacks.LinfFastGradientAttack() 
+#attack_pgd = fb.attacks.L2ProjectedGradientDescentAttack(abs_stepsize=0.01, steps=240, random_start=False)
+
+#attack_cw = fb.attacks.L2CarliniWagnerAttack(confidence=0.0, 
+    #binary_search_steps=9,
+    #steps= 700,
+   #stepsize= 1e-2,          
+    #abort_early= True, 
+    #initial_const=1e-3        
+#)
 nc=3
 
 data_list = [i for i in range(6000, 8000)] # fast validation
@@ -149,8 +159,12 @@ def get_att_results(model, target):
             zeros = torch.zeros_like(predicted)
             acc_sign = torch.where(predicted == labels, zeros, ones)
             acc_num += acc_sign.sum().float()
-            # adv_inputs_ori = adversary.perturb(inputs, labels)
+            #adv_inputs_ori = adversary.perturb(inputs, labels)
+            #_, adv_inputs_ori, _ = attack_fgsm(fmodel, inputs,TargetedMisclassification(labels), epsilons=1.5)
             _, adv_inputs_ori, _ = attack_fb(fmodel, inputs, TargetedMisclassification(labels), epsilons=1.5)
+            #_, adv_inputs_ori, _ = attack_pgd(fmodel, inputs, TargetedMisclassification(labels), epsilons=1.5)
+            #_, adv_inputs_ori, _ = attack_cw(fmodel, inputs, TargetedMisclassification(labels), epsilons=1.5)
+            
             L2_distance = (adv_inputs_ori - inputs).squeeze()
             # L2_distance = (torch.linalg.norm(L2_distance, dim=list(range(1, inputs.squeeze().dim())))).data
             L2_distance = (torch.linalg.norm(L2_distance.flatten(start_dim=1), dim=1)).data
@@ -173,7 +187,12 @@ def get_att_results(model, target):
             acc_sign = torch.where(predicted == labels, ones, zeros)
             acc_num += acc_sign.sum().float()
             # adv_inputs_ori = adversary.perturb(inputs, labels)
+            #_, adv_inputs_ori, _ = attack_fgsm(fmodel, inputs,Misclassification(labels.to(device)), epsilons=1.5)
+            
             _, adv_inputs_ori, _ = attack_fb(fmodel, inputs, Misclassification(labels.to(device)), epsilons=1.5)
+            #_, adv_inputs_ori, _ = attack_pgd(fmodel, inputs, Misclassification(labels.to(device)), epsilons=1.5)
+            #_, adv_inputs_ori, _ = attack_cw(fmodel, inputs, Misclassification(labels.to(device)), epsilons=1.5)
+            
             L2_distance = (adv_inputs_ori - inputs).squeeze()
             L2_distance = (torch.linalg.norm(L2_distance.flatten(start_dim=1), dim=1)).data
             # L2_distance = (torch.linalg.matrix_norm(L2_distance, dim=0, keepdim=True)).data
@@ -473,7 +492,7 @@ with torch.no_grad():
         inputs = inputs.cuda()
         # print(inputs.size())
         labels = labels.cuda()
-        # outputs = netD(inputs)
+        #outputs = netD(inputs)
         outputs = original_net(inputs)
         _, predicted = torch.max(outputs.data, 1)
         # _, predicted = torch.max(outputs.data, 1)
