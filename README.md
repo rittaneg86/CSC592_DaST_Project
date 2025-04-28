@@ -21,11 +21,13 @@ Note: The GAN is use specifically just to generate synthetic images that are use
 # A. Setup:
 
 **Clone this repo:**
+```python
 git clone  https://github.com/rittaneg86/CSC592_DaST_Project.git
-
+```
 **Install dependencies**
 All required packages are listed in requirements.txt.
-```python pip install -r requirements.txt
+```python 
+pip install -r requirements.txt
 ```
 **Experimental setup**
 - Python 3.12.9
