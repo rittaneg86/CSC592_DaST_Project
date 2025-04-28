@@ -30,21 +30,24 @@ All required packages are listed in requirements.txt.
 pip install -r requirements.txt
 ```
 **Experimental setup**
-- Python 3.12.9
-- PyTorch 2.6.0 with CUDA 12.8
-- torchvision==0.21.0
-- foolbox==3.3.4
-- advertorch==0.2.3
-Note: - More of these packages abd their versions can be seen in the requirements.txt file
-      - The initiall DAST framework was implementated on PyTorch 1.0+. This version has been adapted to work with PyTorch 2.6.0.
+`Python 3.12.9`\
+`PyTorch 2.6.0 with CUDA 12.8`\
+`torchvision==0.21.0`\
+`foolbox==3.3.4`\
+`advertorch==0.2.3`\
+
+- More of these packages abd their versions can be seen in the requirements.txt file
+- The initiall DAST framework was implementated on PyTorch 1.0+. This version has been adapted to work with PyTorch 2.6.0.
 **Hardware Setup**
-- GPU: NVIDIA NVIDIA H100 80GB HBM3(80GB, Turing architecture)
-- CUDA 12.8
-- Driver version 570.86.15
+`GPU: NVIDIA NVIDIA H100 80GB HBM3(80GB, Turing architecture)`\
+`CUDA 12.8`\
+`Driver version 570.86.15`\
+
 This work can steal the attacked model without the requirement of any real data. If you want to evaluate the performance of DaST in terms of adversarial attacks, you can use the evaluate.py to do it.
 **Train the target VGG-16 on CIFAR-10**
 The DaST scripts query a pre-trained VGG-16 target.
-```python python train_vgg_cifar10.py
+```python 
+python train_vgg_cifar10.py
 ```
 Saves both best & final VGG-16 checkpoints.
 
